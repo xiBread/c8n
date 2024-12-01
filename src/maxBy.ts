@@ -1,0 +1,76 @@
+/**
+ * Returns the largest element from the values returned by calling
+ * {@link selector} on every element in the {@link iterable}. If the
+ * {@link iterable} is empty, returns `undefined`.
+ *
+ * @example
+ * ```ts
+ * import { maxBy } from "c8n";
+ *
+ * const points = [
+ * 	{ x: 1, y: 6 },
+ * 	{ x: 3, y: 2 },
+ * 	{ x: 5, y: 4 },
+ * ];
+ *
+ * const max = maxBy(points, (pt) => pt.x + pt.y);
+ *
+ * console.log(max);
+ * // => { x: 5, y: 4 }
+ * ```
+ */
+export function maxBy<T>(
+	iterable: Iterable<T>,
+	selector: (element: T) => bigint | number,
+): T | undefined {
+	const iterator = iterable[Symbol.iterator]();
+
+	let next = iterator.next();
+
+	let max = next.value;
+	let maxVal = selector(max);
+
+	while (!next.done) {
+		next = iterator.next();
+		if (next.done) break;
+
+		const val = selector(next.value);
+
+		if (val > maxVal) {
+			max = next.value;
+			maxVal = val;
+		}
+	}
+
+	return max;
+}
+
+if (import.meta.vitest) {
+	const { it, expect } = import.meta.vitest;
+
+	it("maxBy with bigints", () => {
+		const points = [
+			{ x: 1n, y: 6n },
+			{ x: 3n, y: 2n },
+			{ x: 5n, y: 4n },
+		];
+
+		const max = maxBy(points, (pt) => pt.x + pt.y);
+
+		expect(max).toEqual({ x: 5n, y: 4n });
+		expect(maxBy([], () => 0n)).toBeUndefined();
+	});
+
+	it("maxBy with numbers", () => {
+		const points = [
+			{ x: 1, y: 6 },
+			{ x: 3, y: 2 },
+			{ x: 5, y: 4 },
+		];
+
+		const max = maxBy(points, (pt) => pt.x + pt.y);
+
+		expect(max).toEqual({ x: 5, y: 4 });
+		expect(maxBy([], () => 0)).toBeUndefined();
+	});
+}

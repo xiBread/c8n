@@ -1,0 +1,37 @@
+{
+	"name": "c8n",
+	"version": "0.1.0",
+	"description": "",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"author": "Oscar Lee-Vermeren <oscar.leevermeren@gmail.com>",
+	"packageManager": "pnpm@9.14.2",
+	"prettier": {
+		"semi": true,
+		"tabWidth": 4,
+		"useTabs": true,
+		"printWidth": 100
+	},
+	"scripts": {
+		"build": "tsup",
+		"test": "vitest",
+		"bench": "vitest bench",
+		"style": "pnpm lint:fix && pnpm prettier",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"prettier": "prettier -w .",
+		"prepublish": "pnpm build"
+	},
+	"devDependencies": {
+		"@antfu/eslint-config": "^3.11.2",
+		"@faker-js/faker": "^9.2.0",
+		"@types/node": "^22.10.1",
+		"@vitest/coverage-v8": "^2.1.6",
+		"eslint-config-prettier": "^9.1.0",
+		"prettier": "^3.4.1",
+		"tsup": "^8.3.5",
+		"typescript": "^5.7.2",
+		"vitest": "^2.1.6"
+	}
+}
