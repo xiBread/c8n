@@ -1,6 +1,6 @@
 {
 	"name": "c8n",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "",
 	"type": "module",
 	"main": "./dist/index.js",
@@ -13,6 +13,9 @@
 		"useTabs": true,
 		"printWidth": 100
 	},
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"build": "tsup",
 		"test": "vitest",
