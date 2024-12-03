@@ -1,9 +1,11 @@
 import { isAllBigInt } from "./_internal";
-import type { sum } from "./";
+import { isEmpty, type sum } from "./";
 
 /**
  * Returns the sum of the values returned by calling {@link selector} on every
  * element in the {@link iterable}.
+ *
+ * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link sum}
  *
@@ -20,6 +22,8 @@ export function sumOf<T>(iterable: Iterable<T>, selector: (element: T) => bigint
 /**
  * Returns the sum of the values returned by calling {@link selector} on every
  * element in the {@link iterable}.
+ *
+ * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link sum}
  *
@@ -38,6 +42,10 @@ export function sumOf<T>(
 	iterable: Iterable<T>,
 	selector: (element: T) => bigint | number,
 ): bigint | number {
+	if (isEmpty(iterable)) {
+		throw new TypeError("Cannot use sumOf on an empty iterable");
+	}
+
 	let sum = isAllBigInt(iterable) ? 0n : 0;
 
 	for (const element of iterable) {
@@ -56,5 +64,6 @@ if (import.meta.vitest) {
 
 		expect(sumOf(names, (name) => name.length)).toBe(15);
 		expect(sumOf([1n, 2n, 3n], (x) => x * 2n)).toBe(12n);
+		expect(() => sumOf([], (x) => x)).toThrow("empty");
 	});
 }

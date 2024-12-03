@@ -1,8 +1,10 @@
 import { isAllBigInt } from "./_internal";
-import type { productOf } from "./productOf";
+import { isEmpty, type productOf } from "./";
 
 /**
  * Returns the product of the elements in the {@link iterable}.
+ *
+ * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link productOf}
  *
@@ -19,6 +21,8 @@ export function product(iterable: Iterable<bigint>): bigint;
 /**
  * Returns the product of the elements in the {@link iterable}.
  *
+ * @throws {TypeError} Thrown if the {@link iterable} is empty.
+ *
  * @see {@link productOf}
  *
  * @example
@@ -31,6 +35,10 @@ export function product(iterable: Iterable<bigint>): bigint;
  */
 export function product(iterable: Iterable<number>): number;
 export function product(iterable: Iterable<bigint> | Iterable<number>): bigint | number {
+	if (isEmpty(iterable)) {
+		throw new TypeError("Cannot use product an empty iterable");
+	}
+
 	if (isAllBigInt(iterable)) {
 		let product = 1n;
 		for (const x of iterable) product *= x;
