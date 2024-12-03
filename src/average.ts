@@ -1,8 +1,10 @@
 import { isAllBigInt } from "./_internal";
-import { sum } from "./";
+import { isEmpty, sum } from "./";
 
 /**
  * Returns the average value of the elements in the {@link iterable}.
+ *
+ * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @example
  * ```ts
@@ -20,6 +22,8 @@ export function average(iterable: Iterable<bigint>): bigint;
 /**
  * Returns the average value of the elements in the {@link iterable}.
  *
+ * @throws {TypeError} Thrown if the {@link iterable} is empty.
+ *
  * @example
  * ```ts
  * import { average } from "c8n";
@@ -33,6 +37,10 @@ export function average(iterable: Iterable<bigint>): bigint;
  */
 export function average(iterable: Iterable<number>): number;
 export function average(iterable: Iterable<bigint> | Iterable<number>): bigint | number {
+	if (isEmpty(iterable)) {
+		throw new TypeError("Cannot use average on an empty iterable.");
+	}
+
 	const array = [...iterable];
 	const len = isAllBigInt(iterable) ? BigInt(array.length) : array.length;
 
