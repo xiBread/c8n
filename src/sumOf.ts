@@ -1,11 +1,8 @@
-import { isAllBigInt } from "./_internal";
-import { isEmpty, type sum } from "./";
+import type { sum } from "./";
 
 /**
  * Returns the sum of the values returned by calling {@link selector} on every
  * element in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link sum}
  *
@@ -17,13 +14,15 @@ import { isEmpty, type sum } from "./";
  * // => 12n
  * ```
  */
-export function sumOf<T>(iterable: Iterable<T>, selector: (element: T) => bigint): bigint;
+export function sumOf<T>(
+	iterable: Iterable<T>,
+	selector: (element: T) => bigint,
+	hint?: "bigint",
+): bigint;
 
 /**
  * Returns the sum of the values returned by calling {@link selector} on every
  * element in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link sum}
  *
@@ -37,23 +36,35 @@ export function sumOf<T>(iterable: Iterable<T>, selector: (element: T) => bigint
  * // => 15
  * ```
  */
-export function sumOf<T>(iterable: Iterable<T>, selector: (element: T) => number): number;
+export function sumOf<T>(
+	iterable: Iterable<T>,
+	selector: (element: T) => number,
+	hint?: "number",
+): number;
 export function sumOf<T>(
 	iterable: Iterable<T>,
 	selector: (element: T) => bigint | number,
+	hint: "bigint" | "number" = "number",
 ): bigint | number {
-	if (isEmpty(iterable)) {
-		throw new TypeError("Cannot use sumOf on an empty iterable");
+	let result: number | bigint;
+
+	const iterator = iterable[Symbol.iterator]();
+	let next = iterator.next();
+
+	if (next.done) {
+		return hint === "number" ? 0 : 0n;
 	}
 
-	let sum = isAllBigInt(iterable) ? 0n : 0;
+	result = selector(next.value);
+	next = iterator.next();
 
-	for (const element of iterable) {
+	while (!next.done) {
 		// @ts-expect-error
-		sum += selector(element);
+		result += selector(next.value);
+		next = iterator.next();
 	}
 
-	return sum;
+	return result;
 }
 
 if (import.meta.vitest) {
@@ -62,8 +73,12 @@ if (import.meta.vitest) {
 	it("sumOf", () => {
 		const names = ["Alice", "Bob", "Charlie"];
 
+		expect(sumOf([], (x) => x)).toBe(0);
+		expect(sumOf([], (x) => x, "bigint")).toBe(0n);
+
 		expect(sumOf(names, (name) => name.length)).toBe(15);
+
 		expect(sumOf([1n, 2n, 3n], (x) => x * 2n)).toBe(12n);
-		expect(() => sumOf([], (x) => x)).toThrow("empty");
+		expect(sumOf([1n, 2n, 3n].values(), (x) => x * 2n)).toBe(12n);
 	});
 }

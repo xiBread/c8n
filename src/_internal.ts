@@ -16,8 +16,3 @@
  * ```
  */
 export type Rest<T extends unknown[]> = { [K in keyof T]: Iterable<T[K]> };
-
-/** @internal */
-export function isAllBigInt(iterable: Iterable<unknown>): iterable is Iterable<bigint> {
-	return [...iterable].every((e) => typeof e === "bigint");
-}

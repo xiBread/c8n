@@ -1,10 +1,7 @@
-import { isAllBigInt } from "./_internal";
-import { isEmpty, type productOf } from "./";
+import { productOf } from "./";
 
 /**
  * Returns the product of the elements in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link productOf}
  *
@@ -16,12 +13,10 @@ import { isEmpty, type productOf } from "./";
  * // => 48n
  * ```
  */
-export function product(iterable: Iterable<bigint>): bigint;
+export function product(iterable: Iterable<bigint>, hint?: "bigint"): bigint;
 
 /**
  * Returns the product of the elements in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link productOf}
  *
@@ -33,27 +28,26 @@ export function product(iterable: Iterable<bigint>): bigint;
  * // => 48
  * ```
  */
-export function product(iterable: Iterable<number>): number;
-export function product(iterable: Iterable<bigint> | Iterable<number>): bigint | number {
-	if (isEmpty(iterable)) {
-		throw new TypeError("Cannot use product an empty iterable");
-	}
-
-	if (isAllBigInt(iterable)) {
-		let product = 1n;
-		for (const x of iterable) product *= x;
-
-		return product;
-	}
-
-	return [...iterable].reduce((p, val) => p * val, 1);
+export function product(iterable: Iterable<number>, hint?: "number"): number;
+export function product(
+	iterable: Iterable<bigint> | Iterable<number>,
+	hint: "bigint" | "number" = "number",
+): bigint | number {
+	// @ts-expect-error
+	return productOf(iterable, (element) => element, hint);
 }
 
 if (import.meta.vitest) {
 	const { it, expect } = import.meta.vitest;
 
 	it("product", () => {
-		expect(product([2n, 4n, 6n])).toEqual(48n);
-		expect(product([2, 4, 6])).toEqual(48);
+		expect(product([])).toBe(0);
+		expect(product([], "bigint")).toBe(0n);
+
+		expect(product([2n, 4n, 6n])).toBe(48n);
+		expect(product([2n, 4n, 6n].values())).toBe(48n);
+
+		expect(product([2, 4, 6])).toBe(48);
+		expect(product([2, 4, 6].values())).toBe(48);
 	});
 }

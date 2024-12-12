@@ -1,11 +1,8 @@
-import { isAllBigInt } from "./_internal";
-import { isEmpty, type product } from "./";
+import type { product } from "./";
 
 /**
  * Returns the product of the values returned by calling {@link selector} on
  * every element in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link product}
  *
@@ -17,13 +14,15 @@ import { isEmpty, type product } from "./";
  * // => 48n;
  * ```
  */
-export function productOf<T>(iterable: Iterable<T>, selector: (element: T) => bigint): bigint;
+export function productOf<T>(
+	iterable: Iterable<T>,
+	selector: (element: T) => bigint,
+	hint?: "bigint",
+): bigint;
 
 /**
  * Returns the product of the values returned by calling {@link selector} on
  * every element in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link product}
  *
@@ -37,23 +36,35 @@ export function productOf<T>(iterable: Iterable<T>, selector: (element: T) => bi
  * // => 105
  * ```
  */
-export function productOf<T>(iterable: Iterable<T>, selector: (element: T) => number): number;
+export function productOf<T>(
+	iterable: Iterable<T>,
+	selector: (element: T) => number,
+	hint?: "number",
+): number;
 export function productOf<T>(
 	iterable: Iterable<T>,
 	selector: (element: T) => bigint | number,
+	hint: "bigint" | "number" = "number",
 ): bigint | number {
-	if (isEmpty(iterable)) {
-		throw new TypeError("Cannot use productOf on an empty iterable");
+	let result: number | bigint;
+
+	const iterator = iterable[Symbol.iterator]();
+	let next = iterator.next();
+
+	if (next.done) {
+		return hint === "number" ? 0 : 0n;
 	}
 
-	let product = isAllBigInt(iterable) ? 1n : 1;
+	result = selector(next.value);
+	next = iterator.next();
 
-	for (const element of iterable) {
+	while (!next.done) {
 		// @ts-expect-error
-		product *= selector(element);
+		result *= selector(next.value);
+		next = iterator.next();
 	}
 
-	return product;
+	return result;
 }
 
 if (import.meta.vitest) {
@@ -62,7 +73,12 @@ if (import.meta.vitest) {
 	it("productOf", () => {
 		const names = ["Alice", "Bob", "Charlie"];
 
-		expect(productOf([1n, 2n, 3n], (x) => x * 2n)).toBe(48n);
+		expect(productOf([], (x) => x)).toBe(0);
+		expect(productOf([], (x) => x, "bigint")).toBe(0n);
+
 		expect(productOf(names, (name) => name.length)).toBe(105);
+
+		expect(productOf([1n, 2n, 3n], (x) => x * 2n)).toBe(48n);
+		expect(productOf([1n, 2n, 3n].values(), (x) => x * 2n)).toBe(48n);
 	});
 }

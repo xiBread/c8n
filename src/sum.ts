@@ -1,10 +1,7 @@
-import { isAllBigInt } from "./_internal";
-import { isEmpty, type sumOf } from "./";
+import { sumOf } from "./";
 
 /**
  * Returns the sum of the elements in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link sumOf}
  *
@@ -16,12 +13,10 @@ import { isEmpty, type sumOf } from "./";
  * // => 6n
  * ```
  */
-export function sum(iterable: Iterable<bigint>): bigint;
+export function sum(iterable: Iterable<bigint>, hint?: "bigint"): bigint;
 
 /**
  * Returns the sum of the elements in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @see {@link sumOf}
  *
@@ -33,28 +28,26 @@ export function sum(iterable: Iterable<bigint>): bigint;
  * // => 6
  * ```
  */
-export function sum(iterable: Iterable<number>): number;
-export function sum(iterable: Iterable<bigint> | Iterable<number>): bigint | number {
-	if (isEmpty(iterable)) {
-		throw new TypeError("Cannot use sum on an empty iterable");
-	}
-
-	if (isAllBigInt(iterable)) {
-		let sum = 0n;
-		for (const x of iterable) sum += x;
-
-		return sum;
-	}
-
-	return [...iterable].reduce((sum, val) => sum + val);
+export function sum(iterable: Iterable<number>, hint?: "number"): number;
+export function sum(
+	iterable: Iterable<bigint> | Iterable<number>,
+	hint: "bigint" | "number" = "number",
+): bigint | number {
+	// @ts-expect-error
+	return sumOf(iterable, (element) => element, hint);
 }
 
 if (import.meta.vitest) {
 	const { it, expect } = import.meta.vitest;
 
 	it("sum", () => {
-		expect(sum([1, 2, 3])).toEqual(6);
-		expect(sum([1n, 2n, 3n])).toEqual(6n);
-		expect(() => sum([])).toThrow("empty");
+		expect(sum([])).toBe(0);
+		expect(sum([], "bigint")).toBe(0n);
+
+		expect(sum([1n, 2n, 3n])).toBe(6n);
+		expect(sum([1n, 2n, 3n].values())).toBe(6n);
+
+		expect(sum([1, 2, 3])).toBe(6);
+		expect(sum([1, 2, 3].values())).toBe(6);
 	});
 }

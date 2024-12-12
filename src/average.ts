@@ -1,10 +1,7 @@
-import { isAllBigInt } from "./_internal";
-import { isEmpty, sum } from "./";
+import { sum } from "./";
 
 /**
  * Returns the average value of the elements in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @example
  * ```ts
@@ -17,12 +14,10 @@ import { isEmpty, sum } from "./";
  * // => 3n
  * ```
  */
-export function average(iterable: Iterable<bigint>): bigint;
+export function average(iterable: Iterable<bigint>, hint?: "bigint"): bigint;
 
 /**
  * Returns the average value of the elements in the {@link iterable}.
- *
- * @throws {TypeError} Thrown if the {@link iterable} is empty.
  *
  * @example
  * ```ts
@@ -35,24 +30,31 @@ export function average(iterable: Iterable<bigint>): bigint;
  * // => 3
  * ```
  */
-export function average(iterable: Iterable<number>): number;
-export function average(iterable: Iterable<bigint> | Iterable<number>): bigint | number {
-	if (isEmpty(iterable)) {
-		throw new TypeError("Cannot use average on an empty iterable.");
-	}
-
+export function average(iterable: Iterable<number>, hint?: "number"): number;
+export function average(
+	iterable: Iterable<bigint> | Iterable<number>,
+	hint: "bigint" | "number" = "number",
+): bigint | number {
 	const array = [...iterable];
-	const len = isAllBigInt(iterable) ? BigInt(array.length) : array.length;
+	// @ts-expect-error
+	const summed = sum(array, hint);
+	const len = typeof summed === "bigint" ? BigInt(array.length) : array.length;
 
 	// @ts-expect-error
-	return sum(iterable) / len;
+	return summed / len;
 }
 
 if (import.meta.vitest) {
 	const { it, expect } = import.meta.vitest;
 
 	it("average", () => {
+		expect(average([])).toBeNaN();
+		expect(() => average([], "bigint")).toThrow("zero");
+
 		expect(average([1n, 2n, 3n, 4n, 5n])).toBe(3n);
+		expect(average([1n, 2n, 3n, 4n, 5n].values())).toBe(3n);
+
 		expect(average([1, 2, 3, 4, 5])).toBe(3);
+		expect(average([1, 2, 3, 4, 5].values())).toBe(3);
 	});
 }
