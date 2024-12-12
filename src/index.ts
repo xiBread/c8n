@@ -36,7 +36,6 @@ export * from "./indexOf";
 export * from "./indices";
 export * from "./intersect";
 export * from "./intersperse";
-export * from "./isEmpty";
 export * from "./join";
 export * from "./keepWhile";
 export * from "./last";
